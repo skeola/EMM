@@ -149,16 +149,14 @@ def gmm(data, means, classes, stop):
 
     #M-step - find parameters
     means = calc_means(data, mg, classes)
-    print "prev cov = {}".format(covariance)
     covariance = calc_cov(data, means, mg, classes, covariance)
-    print "cov = {}".format(covariance)
     prior = np.true_divide(classes, len(data))
 
     #Find our delta and check the stopping condition
     delta = likelihood - prev_likelihood
     prev_likelihood = likelihood
-
-  return (gmm_classify(mg), means)
+    i += 1
+  return (mg, means, likelihood)
 
 ######################
 ##--INITIALIZATION--##
@@ -212,8 +210,6 @@ def log_like(data, means, covariance, prior):
   for n in range(len(data)):
     for k in range(len(means)):
       pdfs[n][k] = multivariate_normal.pdf(data[n], mean=means[k], cov=covariance[k])
-  print "prior.shape = {}".format(prior.shape)
-  print "pdfs.T.shape = {}".format(pdfs.T.shape)
   return np.sum(np.dot(prior.T, pdfs.T))
 
 #Calculates the Gaussian density
@@ -258,3 +254,11 @@ def calc_cov(data, means, mg, classes, shape):
   
   return covariance
 
+#Used for graphing GMM (as well as fcm)
+#colors  - c colors, each with 4 values for RGBA
+#weights - weights for each centroid
+def get_colors(colors, weights):
+  sqrd_colors = np.square(colors)
+  sqrd_weights = np.square(weights)
+  ret = np.dot(np.transpose(sqrd_colors), np.transpose(weights))
+  return np.sqrt(ret/len(weights[0]))
